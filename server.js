@@ -48,8 +48,9 @@ app.post('/api/register', (req, res) => {
         } else {
             if (!playersData.users.find(player => player.username === body.username)) {
                 registerUser(body.username, body.password);
+                res.status(201).send(`User ${body.username} registered successfull`);
             } else {
-                res.status(400).send(`Username ${body.username} alreary registered!`);
+                res.status(400).send(`User ${body.username} alreary registered!`);
             }     
         }
     } else {
