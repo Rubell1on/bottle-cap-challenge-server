@@ -7,7 +7,7 @@ const yandex = new yandexApi(yandexToken);
 const playersDataFileName = 'players_data.json';
 
 let playersData = {};
-let connecterUsers = {users:[]};
+let connectedUsers = {users:[]};
 
 class Enumerator {
     constructor(object) {
@@ -24,7 +24,7 @@ app.use('/public', express.static('public'))
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-app.listen(PORT, () => {
+app.listen(PORT, '192.168.0.99', () => {
     serverPreparation()
         .then((data) => {
             playersData = JSON.parse(data.body);
@@ -33,27 +33,24 @@ app.listen(PORT, () => {
         .catch((error) => console.error(error));
 });
 
-app.get('/', (req, res) => {
-    res.json(playersData);
-});
-
 app.get('/api/login', (req, res) => { 
     const query = req.query;
     const userData = playersData.users.find((user) => user.username === query.username);
     if (userData) {
         if (userData.password === query.password) {
             if (userData.role === roles.admin) {
-                if (Object.keys(connecterUsers).length) {
-                    const user = connecterUsers.users.find((user) => user.username === query.username);
+                if (Object.keys(connectedUsers).length) {
+                    const user = connectedUsers.users.find((user) => user.username === query.username);
                     if (user) {
                         res.status(200).json(user);
                     } else {
                         const template = {
                             username: userData.username,
                             apiKey: createApiKey(10)
-                        }
-                        connecterUsers.users.push(template);
-                        res.status(201).json(template);
+                        };
+
+                        connectedUsers.users.push(template);
+                        res.status(201).json({ username: template.username, apiKey: template.apiKey });
                     }
                 }
             } else {
@@ -121,25 +118,24 @@ app.post('/api/register', (req, res) => {
     }
 });
 
-app.route('/dashboard')
-    .get((req, res) => {
-        const query = req.query;
-        if (!Object.keys(query).length) {
-            res.render('index.ejs');
-        } else {
-            const admin = connecterUsers.users.find((admin) => admin.username === query.username);
-            if (admin) {
-                if (admin.apiKey === query.apiKey) {
-                    res.render('dashboard.ejs');
-                } else {
-                    res.status(400).send("Api key expired");
-                }
+app.get('/dashboard', (req, res) => {
+    const query = req.query;
+    if (!Object.keys(query).length) {
+        res.render('index.ejs');
+    } else {
+        const admin = connectedUsers.users.find((admin) => admin.username === query.username);
+        if (admin) {
+            if (admin.apiKey === query.apiKey) {
+                res.render('dashboard.ejs');
             } else {
-                res.status(404).send(`User ${query.username} not found`);
+                res.status(400).send("Api key expired");
             }
-            
+        } else {
+            res.status(404).send(`User ${query.username} not found`);
         }
-    });
+        
+    }
+});
 
 function createApiKey(length) {
     let result           = '';
