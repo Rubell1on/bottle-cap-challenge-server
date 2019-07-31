@@ -1,0 +1,20 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+.login-form {
+    width: 200px;
+    height: 100%;
+    margin: 0 auto;
+    margin-top: calc(50vh - 46.5px);
+}
+
+.login-form > input, label {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* .login-form > label, input {
+    float: left;
+} */

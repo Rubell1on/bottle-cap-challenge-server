@@ -4,7 +4,8 @@
     "dependencies": {
         "body-parser": "^1.18.3",
         "express": "^4.16.4",
-        "request": "^2.88.0"
+        "request": "^2.88.0",
+        "ejs": "^2.6.1"
     },
     "engines": {},
     "scripts": {
