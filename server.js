@@ -42,7 +42,7 @@ app.get('/api/login', (req, res) => {
                 if (Object.keys(connectedUsers).length) {
                     const user = connectedUsers.users.find((user) => user.username === query.username);
                     if (user) {
-                        res.status(200).json(user);
+                        res.status(200).json(playersData);
                     } else {
                         const template = {
                             username: userData.username,
@@ -82,10 +82,10 @@ app.post('/api/register', (req, res) => {
     const body = req.body;
     if (body.username && body.password) {
         if (!Object.keys(playersData).length) {
-            registerUser(body.username, body.password, body.role);
+            registerUser(body.username, body.password, body.role, body.email);
         } else {
             if (!playersData.users.find(player => player.username === body.username)) {
-                registerUser(body.username, body.password, body.role);
+                registerUser(body.username, body.password, body.role, body.email);
                 res.status(201).send(`User ${body.username} registered successfull`);
             } else {
                 res.status(400).send(`User ${body.username} alreary registered!`);
@@ -95,10 +95,11 @@ app.post('/api/register', (req, res) => {
         res.status(400).send('Enter correct username and password');
     }
     
-    async function registerUser(username, password, role) {
+    async function registerUser(username, password, role, email) {
         const template = {
             username,
             password,
+            email,
             playerAttributes: {
                 coins: 0,
                 highScore: 0
