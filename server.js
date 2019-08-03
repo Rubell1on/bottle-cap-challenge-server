@@ -78,14 +78,66 @@ app.get('/api/data', (req, res) => {
     }
 });
 
-app.post('/api/register', (req, res) => {
+app.post('/api/updateData', async (req, res) => {
+    const query = req.body;
+    const userData = playersData.users.find((user) => user.username === query.username);
+    if (userData) {
+        if (userData.password === query.password) {
+            userData.playerAttributes = query.playerAttributes;
+            await uploadUserdata();
+            res.status(200).send("Updated user data was uploaded");
+
+        } else {
+            res.status(400).send('Incorrect login or password');
+        }
+    } else {
+        res.status(400).send(`User ${query.username} not registered!`);
+    }
+
+    async function uploadUserdata() {
+        const uploadLink = await yandex.getUploadLink(`/${playersDataFileName}`);
+        await yandex.putData(uploadLink.body.href, JSON.stringify(playersData));
+    }
+});
+
+app.get('/api/top', (req, res) => {
+    const highScore = playersData.users;
+    const highTime = playersData.users;
+
+    highScore.sort((a, b) => b.playerAttributes.highScore - a.playerAttributes.highScore);
+    highTime.sort((a, b) => b.playerAttributes.highTime - a.playerAttributes.highTime);
+
+    const highScoreTop = highScore.reduce((acc, curr, ind) => {
+        acc[ind] = {
+            username: curr.username,
+            score: curr.playerAttributes.highScore
+        };
+
+        return acc;
+    }, []).splice(0, 10);
+
+    const highTimeTop = highTime.reduce((acc, curr, ind) => {
+        acc[ind] = {
+            username: curr.username,
+            time: curr.playerAttributes.highTime
+        };
+
+        return acc;
+    }, []).splice(0, 10);
+
+    const json = JSON.stringify({ highScoreTop, highTimeTop });
+    
+    res.status(200).json(json);
+})
+
+app.post('/api/register', async (req, res) => {
     const body = req.body;
     if (body.username && body.password) {
         if (!Object.keys(playersData).length) {
-            registerUser(body.username, body.password, body.role, body.email);
+            await registerUser(body.username, body.password, body.role, body.email);
         } else {
             if (!playersData.users.find(player => player.username === body.username)) {
-                registerUser(body.username, body.password, body.role, body.email);
+                await registerUser(body.username, body.password, body.role, body.email);
                 res.status(201).send(`User ${body.username} registered successfull`);
             } else {
                 res.status(400).send(`User ${body.username} alreary registered!`);
@@ -102,7 +154,8 @@ app.post('/api/register', (req, res) => {
             email,
             playerAttributes: {
                 coins: 0,
-                highScore: 0
+                highScore: 0,
+                highTime: 0
             }
         };
 
