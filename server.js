@@ -101,8 +101,11 @@ app.post('/api/updateData', async (req, res) => {
 });
 
 app.get('/api/top', (req, res) => {
-    const highScore = playersData.users;
-    const highTime = playersData.users;
+    const query = req.query;
+    query.index = Number(query.index);
+
+    const highScore = new Object(playersData).users;
+    const highTime = new Object(playersData).users;
 
     highScore.sort((a, b) => b.playerAttributes.highScore - a.playerAttributes.highScore);
     highTime.sort((a, b) => b.playerAttributes.highTime - a.playerAttributes.highTime);
@@ -110,7 +113,7 @@ app.get('/api/top', (req, res) => {
     const highScoreTop = highScore.reduce((acc, curr, ind) => {
         acc[ind] = {
             username: curr.username,
-            score: curr.playerAttributes.highScore
+            highScore: curr.playerAttributes.highScore
         };
 
         return acc;
@@ -119,14 +122,14 @@ app.get('/api/top', (req, res) => {
     const highTimeTop = highTime.reduce((acc, curr, ind) => {
         acc[ind] = {
             username: curr.username,
-            time: curr.playerAttributes.highTime
+            highTime: curr.playerAttributes.highTime
         };
 
         return acc;
     }, []).splice(0, 10);
 
-    const json = JSON.stringify({ highScoreTop, highTimeTop });
-    
+    const template = { highScoreTop, highTimeTop };
+    const json = template[query.param][query.index];
     res.status(200).json(json);
 })
 
