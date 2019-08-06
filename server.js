@@ -69,7 +69,7 @@ app.get('/api/data', (req, res) => {
     const userData = playersData.users.find((user) => user.username === query.username);
     if (userData) {
         if (userData.password === query.password) {
-            res.status(200).json({ username: userData.username, playerAttributes: userData.playerAttributes });
+            res.status(200).json({ username: userData.username, playerAttributes: userData.playerAttributes, charactersData: userData.charactersData });
         } else {
             res.status(400).send('Incorrect login or password');
         }
@@ -92,11 +92,6 @@ app.post('/api/updateData', async (req, res) => {
         }
     } else {
         res.status(400).send(`User ${query.username} not registered!`);
-    }
-
-    async function uploadUserdata() {
-        const uploadLink = await yandex.getUploadLink(`/${playersDataFileName}`);
-        await yandex.putData(uploadLink.body.href, JSON.stringify(playersData));
     }
 });
 
@@ -129,8 +124,10 @@ app.get('/api/top', (req, res) => {
     }, []).splice(0, 10);
 
     const template = { highScoreTop, highTimeTop };
-    const json = template[query.param][query.index];
-    res.status(200).json(json);
+    //const json = template[query.param][query.index];
+    //res.status(200).json(json);
+
+    res.status(200).json({ highScoreTop: template.highScoreTop });
 })
 
 app.post('/api/register', async (req, res) => {
@@ -159,7 +156,8 @@ app.post('/api/register', async (req, res) => {
                 coins: 0,
                 highScore: 0,
                 highTime: 0
-            }
+            },
+            charactersData : [{ characterName: "Guy", price: 0, isPurchased: true}]
         };
 
         if (!role) {
@@ -172,6 +170,28 @@ app.post('/api/register', async (req, res) => {
         playersData.users.push(template);
         const uploadLink = await yandex.getUploadLink(`/${playersDataFileName}`);
         await yandex.putData(uploadLink.body.href, JSON.stringify(playersData));
+    }
+});
+
+app.post('/api/purchase', async (req, res) => {
+    const query = req.body;
+    const userData = playersData.users.find(user => user.username === query.username);
+    if (userData) { 
+        const foundChar = userData.charactersData.find(char => char.characterName === query.charactersData.characterName);
+        if (!foundChar) {
+            if (userData.playerAttributes.coins >= query.charactersData.price) {
+                query.charactersData.isPurchased = true;
+                userData.charactersData.push(query.charactersData);
+                userData.playerAttributes.coins -= query.charactersData.price;
+                await uploadUserdata();
+                res.status(201).send(`Character ${query.charactersData.characterName} was bought for ${query.charactersData.price}`);
+            } else {
+                res.status(400).send('You have not enough money for buying this character');
+            }
+        }
+        else {
+            res.status(400).send('You already bought this character');
+        }
     }
 });
 
@@ -193,6 +213,11 @@ app.get('/dashboard', (req, res) => {
         
     }
 });
+
+async function uploadUserdata() {
+    const uploadLink = await yandex.getUploadLink(`/${playersDataFileName}`);
+    await yandex.putData(uploadLink.body.href, JSON.stringify(playersData));
+}
 
 function createApiKey(length) {
     let result           = '';
