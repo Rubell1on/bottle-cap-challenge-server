@@ -32,7 +32,7 @@ app.listen(PORT, () => {
             console.log('Server started');
             setInterval(() => {
                 refreshPage().catch(e => console.log(e));
-            }, 10000);
+            }, 300000);
         })
         .catch((error) => console.error(error));
 });
