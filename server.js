@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const yandexApi = require('./JS/yandexApi');
+const request = require('request');
 const PORT = process.env.PORT || 3000;
 const yandexToken = process.env.yandexToken;
 const yandex = new yandexApi(yandexToken);
@@ -29,6 +30,9 @@ app.listen(PORT, () => {
         .then((data) => {
             playersData = JSON.parse(data.body);
             console.log('Server started');
+            setInterval(() => {
+                refreshPage().catch(e => console.log(e));
+            }, 10000);
         })
         .catch((error) => console.error(error));
 });
@@ -213,6 +217,35 @@ app.get('/dashboard', (req, res) => {
         
     }
 });
+
+function get(uri) {
+    const options = { uri };
+
+    if (arguments.length > 1) options.encoding = arguments[1];
+
+    return new Promise((resolve, reject) => {
+        request(options, (err, res, body) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(body);
+            }
+        });
+    }); 
+}
+
+async function refreshPage() {
+    await get('https://bottle-proj.herokuapp.com/');
+    const date = {
+        y: new Date().getFullYear(),
+        m: new Date().getMonth() + 1,
+        d: new Date().getDate(),
+        h: new Date().getHours(),
+        M: new Date().getMinutes(),
+        s: new Date().getSeconds()
+    }
+    console.log(`Обновлено ${date.y}-${date.m}-${date.d} ${date.h}:${date.M}:${date.s}`);
+}
 
 async function uploadUserdata() {
     const uploadLink = await yandex.getUploadLink(`/${playersDataFileName}`);
