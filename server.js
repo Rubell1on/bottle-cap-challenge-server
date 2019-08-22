@@ -138,10 +138,10 @@ app.post('/api/register', async (req, res) => {
     const body = req.body;
     if (body.username && body.password) {
         if (!Object.keys(playersData).length) {
-            await registerUser(body.username, body.password, body.role, body.email);
+            await registerUser(body.username, body.password, body.role);
         } else {
             if (!playersData.users.find(player => player.username === body.username)) {
-                await registerUser(body.username, body.password, body.role, body.email);
+                await registerUser(body.username, body.password, body.role);
                 res.status(201).send(`User ${body.username} registered successfull`);
             } else {
                 res.status(400).send(`User ${body.username} alreary registered!`);
@@ -151,11 +151,10 @@ app.post('/api/register', async (req, res) => {
         res.status(400).send('Enter correct username and password');
     }
     
-    async function registerUser(username, password, role, email) {
+    async function registerUser(username, password, role) {
         const template = {
             username,
             password,
-            email,
             playerAttributes: {
                 coins: 0,
                 highScore: 0,
