@@ -103,11 +103,13 @@ app.get('/api/top', (req, res) => {
     const query = req.query;
     query.index = Number(query.index);
 
-    const highScore = new Object(playersData).users;
-    const highTime = new Object(playersData).users;
+    let highScore = Object.assign({}, playersData);
+    //let highTime = Object.assign({}, playersData);
 
-    highScore.sort((a, b) => b.playerAttributes.highScore - a.playerAttributes.highScore);
-    highTime.sort((a, b) => b.playerAttributes.highTime - a.playerAttributes.highTime);
+    //console.log(highScore == highTime);
+
+    highScore = highScore.users.sort((a, b) => b.playerAttributes.highScore - a.playerAttributes.highScore);
+    //highTime = highTime.users.sort((a, b) => b.playerAttributes.highTime - a.playerAttributes.highTime);
 
     const highScoreTop = highScore.reduce((acc, curr, ind) => {
         acc[ind] = {
@@ -118,20 +120,20 @@ app.get('/api/top', (req, res) => {
         return acc;
     }, []).splice(0, 10);
 
-    const highTimeTop = highTime.reduce((acc, curr, ind) => {
-        acc[ind] = {
-            username: curr.username,
-            highTime: curr.playerAttributes.highTime
-        };
+    // const highTimeTop = highTime.reduce((acc, curr, ind) => {
+    //     acc[ind] = {
+    //         username: curr.username,
+    //         highTime: curr.playerAttributes.highTime
+    //     };
 
-        return acc;
-    }, []).splice(0, 10);
+    //     return acc;
+    // }, []).splice(0, 10);
 
-    const template = { highScoreTop, highTimeTop };
+    // const template = { highScoreTop, highTimeTop };
     //const json = template[query.param][query.index];
     //res.status(200).json(json);
 
-    res.status(200).json({ highScoreTop: template.highScoreTop });
+    res.status(200).json({ highScoreTop });
 })
 
 app.post('/api/register', async (req, res) => {
@@ -276,3 +278,4 @@ async function serverPreparation() {
         return yandex.getData(downloadLink.body.href);
     }
 }
+
