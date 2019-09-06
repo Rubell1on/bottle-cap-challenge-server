@@ -25,7 +25,7 @@ app.use('/public', express.static('public'))
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-app.listen(PORT, () => {
+app.listen(PORT, '192.168.0.106', () => {
     serverPreparation()
         .then((data) => {
             playersData = JSON.parse(data.body);
@@ -208,7 +208,8 @@ app.get('/dashboard', (req, res) => {
         const admin = connectedUsers.users.find((admin) => admin.username === query.username);
         if (admin) {
             if (admin.apiKey === query.apiKey) {
-                res.render('dashboard.ejs');
+                //res.render('dashboard.ejs');
+                res.json({playersData, usersCount: playersData.users.length});
             } else {
                 res.status(400).send("Api key expired");
             }
