@@ -25,7 +25,7 @@ app.use('/public', express.static('public'))
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
-app.listen(PORT, '192.168.0.106', () => {
+app.listen(PORT, () => {
     serverPreparation()
         .then((data) => {
             playersData = JSON.parse(data.body);
