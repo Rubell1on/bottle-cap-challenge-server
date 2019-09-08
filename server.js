@@ -46,7 +46,7 @@ app.get('/api/login', (req, res) => {
                 if (Object.keys(connectedUsers).length) {
                     const user = connectedUsers.users.find((user) => user.username === query.username);
                     if (user) {
-                        res.status(200).json(playersData);
+                        res.status(200).json({ username: user.username, apiKey: user.apiKey });
                     } else {
                         const template = {
                             username: userData.username,
@@ -58,7 +58,7 @@ app.get('/api/login', (req, res) => {
                     }
                 }
             } else {
-                res.status(404).send('You have not administrator permissions');
+                res.status(404).send('You have no administrator permissions');
             }
         } else {
             res.status(400).send('Incorrect login or password');
